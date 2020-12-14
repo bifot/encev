@@ -12,6 +12,8 @@ program
   .version("1.0.0")
   .option("-d, --deprecated", "use deprecated mechanism for crypto")
   .option("-p, --password <password>", "password for encrypt/decrypt")
+  .option("--decrypt", "force decrypt")
+  .option("--encrypt", "force encrypt")
   .parse(process.argv);
 
 const [filepath] = program.args;
@@ -20,10 +22,23 @@ if (!fs.existsSync(filepath)) {
   return console.error("Hm... Can't find item by this filepath");
 }
 
-const content = fs.readFileSync(filepath, "utf8");
-const methodName = REGEX.test(content) ? "decrypt" : "encrypt";
-
 let result;
+let content = fs.readFileSync(filepath, "utf8");
+let methodName = REGEX.test(content) ? "decrypt" : "encrypt";
+
+if (program.decrypt) {
+  // already decrypted file
+  if (methodName === "encrypt") return;
+
+  methodName = "decrypt";
+}
+
+if (program.encrypt) {
+  // already encrypted file
+  if (methodName === "decrypt") return;
+
+  methodName = "encrypt";
+}
 
 if (program.deprecated) {
   result = utils[methodName](content, program.password);
