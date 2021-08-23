@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 const fs = require("fs");
+const cp = require("child_process");
 const {program} = require("commander");
 const encryptor = require("simple-encryptor");
 const utils = require("./utils");
@@ -25,6 +26,10 @@ if (!fs.existsSync(filepath)) {
 let result;
 let content = fs.readFileSync(filepath, "utf8");
 let methodName = REGEX.test(content) ? "decrypt" : "encrypt";
+
+if (!program.password) {
+  program.password = cp.execSync("echo $GIT_ENCRYPT_PASSWORD").toString().trim();
+}
 
 if (program.decrypt) {
   // already decrypted file
